@@ -1,0 +1,213 @@
+.home {
+  --h-paper: var(--color-paper, #f7f5f0);
+  --h-ink: var(--color-ink, #1f2421);
+  --h-soft: var(--color-ink-soft, #5a625e);
+  --h-brand: var(--color-brand, #2f5d50);
+  --h-deep: var(--color-brand-deep, #1e3f36);
+  --h-sage: var(--color-sage, #a3b8ae);
+  --h-sage-soft: var(--color-sage-soft, #e8efec);
+  --h-clay: var(--color-clay, #c86d51);
+  --h-serif: Georgia, Cambria, "Times New Roman", Times, serif;
+
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--h-paper);
+  color: var(--h-ink);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  box-sizing: border-box;
+}
+.home *, .home *::before, .home *::after { box-sizing: border-box; }
+
+/* ---------- Barra superior ---------- */
+.home-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 20px 24px;
+}
+.home-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--h-serif);
+  font-size: 1.15rem;
+  color: var(--h-deep);
+}
+.home-brand span:first-child { color: var(--h-clay); font-size: 1.3rem; }
+
+/* ---------- Botones ---------- */
+.home-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  cursor: pointer;
+  border-radius: 999px;
+  background: var(--h-brand);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  padding: 12px 24px;
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+.home-btn:hover { background: var(--h-deep); transform: translateY(-1px); }
+.home-btn:focus-visible { outline: 3px solid var(--h-sage); outline-offset: 3px; }
+.home-btn--lg {
+  font-size: 1.05rem;
+  padding: 16px 34px;
+  box-shadow: 0 10px 24px -10px rgba(30, 63, 54, 0.55);
+}
+.home-btn--outline {
+  background: transparent;
+  color: var(--h-deep);
+  border: 1.5px solid var(--h-sage);
+  padding: 9px 22px;
+}
+.home-btn--outline:hover { background: var(--h-sage-soft); border-color: var(--h-brand); }
+
+/* ---------- Hero ---------- */
+.home-hero {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+  gap: 40px;
+  width: 100%;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 24px 24px 64px;
+}
+.home-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 20px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--h-sage-soft);
+  color: var(--h-deep);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.home-eyebrow::before { content: "◆"; color: var(--h-clay); font-size: 0.7rem; }
+
+.home-title {
+  margin: 0 0 20px;
+  font-family: var(--h-serif);
+  font-weight: 400;
+  font-size: clamp(2.3rem, 5vw, 3.8rem);
+  line-height: 1.08;
+  color: var(--h-deep);
+}
+.home-title em { font-style: italic; color: var(--h-clay); }
+
+.home-lead {
+  margin: 0 0 32px;
+  max-width: 34rem;
+  font-size: 1.12rem;
+  line-height: 1.65;
+  color: var(--h-soft);
+}
+.home-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; }
+.home-note { font-size: 0.9rem; color: var(--h-soft); }
+
+/* ---------- Imagen ---------- */
+.home-visual { position: relative; padding: 0 0 18px 18px; }
+.home-visual::before {
+  content: "";
+  position: absolute;
+  inset: 22px 22px 0 0;
+  border-radius: 32px;
+  background: var(--h-sage);
+  opacity: 0.55;
+}
+.home-img {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 28px;
+  box-shadow: 0 30px 60px -28px rgba(30, 63, 54, 0.55);
+}
+.home-badge {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 16px 34px -14px rgba(30, 63, 54, 0.45);
+  font-size: 0.9rem;
+  line-height: 1.3;
+  color: var(--h-deep);
+}
+.home-badge strong { display: block; font-size: 0.95rem; }
+.home-badge small { color: var(--h-soft); font-size: 0.8rem; }
+.home-badge-ico {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--h-sage-soft);
+  font-size: 1.1rem;
+}
+
+/* ---------- Valores ---------- */
+.home-values {
+  background: #fff;
+  border-top: 1px solid rgba(0, 0, 0, 0.07);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+}
+.home-values-inner {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  width: 100%;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+.home-value { display: flex; align-items: center; gap: 14px; }
+.home-value-ico {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: var(--h-sage-soft);
+  color: var(--h-brand);
+  font-size: 1.3rem;
+}
+.home-value h3 { margin: 0; font-family: var(--h-serif); font-weight: 400; font-size: 1.1rem; color: var(--h-deep); }
+.home-value p { margin: 2px 0 0; font-size: 0.9rem; color: var(--h-soft); }
+
+/* ---------- Pie ---------- */
+.home-footer {
+  padding: 22px 24px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--h-soft);
+}
+
+/* ---------- Escritorio ---------- */
+@media (min-width: 900px) {
+  .home-hero { grid-template-columns: 1.05fr 1fr; gap: 64px; padding-top: 36px; padding-bottom: 88px; }
+  .home-values-inner { grid-template-columns: repeat(3, 1fr); gap: 32px; }
+}
+@media (max-width: 520px) {
+  .home-nav .home-brand-long { display: none; }
+  .home-btn--lg { width: 100%; }
+}

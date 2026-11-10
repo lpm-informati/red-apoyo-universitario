@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import Header from "./components/layout/Header.jsx";
 import Footer from "./components/layout/Footer.jsx";
+import Home from "./components/Home.jsx";
 import Login from "./components/Login.jsx";
 import ToastStack from "./components/ui/ToastStack.jsx";
 import InicioView from "./features/inicio/InicioView.jsx";
@@ -493,8 +494,9 @@ export default function App() {
   if (!sesion) {
     return (
       <Routes>
+        <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login onLogin={manejarLogin} />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );
   }
