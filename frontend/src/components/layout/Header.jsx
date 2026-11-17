@@ -4,6 +4,7 @@ import { ETIQUETAS_ROL } from "../../data/mockData.js";
 
 export default function Header({ usuario, navItems, onLogout }) {
   const [menuAbierto, setMenuAbierto] = useState(false);
+  const mostrarNav = navItems.length > 1; // con una sola pantalla (docente) el botón no aporta nada
 
   return (
     <header className="sticky top-0 z-30 border-b border-stone-300 bg-surface">
@@ -15,6 +16,7 @@ export default function Header({ usuario, navItems, onLogout }) {
         </div>
 
         {/* Navegación en escritorio */}
+        {mostrarNav && (
         <nav className="ml-4 hidden flex-1 items-center gap-1 md:flex">
           {navItems.map((item) => (
             <NavLink
@@ -30,6 +32,7 @@ export default function Header({ usuario, navItems, onLogout }) {
             </NavLink>
           ))}
         </nav>
+        )}
 
         <div className="ml-auto hidden items-center gap-3 md:flex">
           <div className="text-right text-sm">
@@ -54,7 +57,7 @@ export default function Header({ usuario, navItems, onLogout }) {
       {/* Menú desplegable en móvil */}
       {menuAbierto && (
         <nav className="flex flex-col gap-1 border-t border-stone-200 px-4 py-3 md:hidden">
-          {navItems.map((item) => (
+          {mostrarNav && navItems.map((item) => (
             <NavLink
               key={item.ruta}
               to={`/${item.ruta}`}

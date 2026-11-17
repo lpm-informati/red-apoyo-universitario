@@ -1,9 +1,10 @@
 import KpiCard from "../../components/ui/KpiCard.jsx";
 import Badge from "../../components/ui/Badge.jsx";
 import Button from "../../components/ui/Button.jsx";
+import TarjetaBienvenida from "../../components/ui/TarjetaBienvenida.jsx";
 import { formatearFecha, generarResumen, ordenarPorUrgencia } from "../../utils/format.js";
 
-export default function InicioView({ solicitudes, sedes, onNavigate }) {
+export default function InicioView({ solicitudes, sedes, sesion, onNavigate }) {
   const resumen = generarResumen(solicitudes, sedes);
   const urgentes = ordenarPorUrgencia(solicitudes)
     .filter((s) => s.urgencia === "Alta" && s.estado !== "Cerrada")
@@ -11,6 +12,7 @@ export default function InicioView({ solicitudes, sedes, onNavigate }) {
 
   return (
     <div className="flex flex-col gap-6">
+      <TarjetaBienvenida sesion={sesion} />
       <div>
         <h2 className="font-display text-2xl text-brand-deep">Panorama general</h2>
         <p className="text-sm text-ink-soft">Estado actual de las solicitudes de apoyo y actividades preventivas.</p>
@@ -20,7 +22,7 @@ export default function InicioView({ solicitudes, sedes, onNavigate }) {
         <KpiCard valor={resumen.total} etiqueta="Solicitudes totales" />
         <KpiCard valor={resumen.abiertas} etiqueta="Casos abiertos" />
         <KpiCard valor={resumen.altaUrgenciaSinAsignar} etiqueta="Urgencia alta sin asignar" alerta />
-        <KpiCard valor={`${resumen.tiempoPromedioHoras} h`} etiqueta="Tiempo promedio de asignación" />
+        <KpiCard valor={resumen.tiempoPromedioTexto} etiqueta="Tiempo típico de asignación" ayuda="Tiempo entre que llega una solicitud y se le asigna un profesional. Es el valor central de los casos ya asignados." />
       </div>
 
       <section className="rounded-md border border-stone-300 bg-surface p-5">

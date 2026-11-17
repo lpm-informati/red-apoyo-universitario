@@ -103,6 +103,7 @@ export default function AdministracionView({
                 <option value="consejero">Consejero</option>
                 <option value="profesional">Profesional de apoyo</option>
                 <option value="docente">Docente</option>
+                <option value="estudiante">Estudiante</option>
               </Select>
               <Button small type="submit">Agregar usuario</Button>
             </div>
@@ -160,6 +161,7 @@ export default function AdministracionView({
               <Input name="nombre" placeholder="Nombre" required />
               <Input name="especialidad" placeholder="Especialidad" required />
             </div>
+            <Input name="email" type="email" placeholder="Correo de su cuenta (ej. nombre@uni.cl)" required />
             <div className="flex flex-wrap gap-2">
               <Select name="sedeId" required className="flex-1">
                 {sedes.map((s) => <option key={s.id} value={s.id}>{s.nombre}</option>)}

@@ -27,6 +27,10 @@ const esquema = new mongoose.Schema({
   inscritos: {
     type: Number,
     default: 0
+  },
+  inscritosEmails: {
+    type: [String],
+    default: []
   }
 })
 export default mongoose.model('taller',esquema)

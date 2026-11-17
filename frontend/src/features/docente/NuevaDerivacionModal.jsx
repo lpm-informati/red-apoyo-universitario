@@ -1,15 +1,19 @@
 import { useState } from "react";
 import Modal from "../../components/ui/Modal.jsx";
 import Button from "../../components/ui/Button.jsx";
+import Icon from "../../components/ui/Icon.jsx";
 import { Input, Select, Textarea, ErrorList } from "../../components/ui/FormField.jsx";
+import SelectorEstudiante, { OTRO_ESTUDIANTE } from "../../components/ui/SelectorEstudiante.jsx";
 
 /*
  RF3: "Permitir a docentes derivar estudiantes mediante un formulario de
  derivación responsable." El origen queda fijo como "Derivación docente"
  y se guarda en App.jsx; aquí solo se piden los datos del caso.
  */
-export default function NuevaDerivacionModal({ sedes, onClose, onCrear }) {
+export default function NuevaDerivacionModal({ sedes, estudiantes = [], onClose, onCrear }) {
   const [errores, setErrores] = useState([]);
+  const [seleccion, setSeleccion] = useState("");
+  const otro = seleccion === OTRO_ESTUDIANTE;
 
   function manejarEnvio(e) {
     e.preventDefault();
@@ -23,22 +27,30 @@ export default function NuevaDerivacionModal({ sedes, onClose, onCrear }) {
   }
 
   return (
-    <Modal titulo="Derivar estudiante" onClose={onClose}>
+    <Modal titulo="Derivar estudiante" icono="users" onClose={onClose}>
       <form onSubmit={manejarEnvio} className="flex flex-col gap-4">
-        <p className="rounded-md bg-sage-soft px-3 py-2 text-xs text-brand-deep">
-          🔒 Comparte solo la información necesaria para que el equipo de bienestar pueda contactar al estudiante.
+        <p className="flex items-center gap-2 rounded-md bg-sage-soft px-3 py-2 text-xs text-brand-deep">
+          <Icon nombre="lock" className="h-4 w-4 shrink-0" />
+          Comparte solo la información necesaria para que el equipo de bienestar pueda contactar al estudiante.
         </p>
-        <label className="flex flex-col gap-1.5 text-sm text-ink-soft">
-          <span>Referencia del estudiante (iniciales o folio)</span>
-          <Input name="estudianteIniciales" placeholder="Ej. J.A.T." required />
-        </label>
+        <SelectorEstudiante estudiantes={estudiantes} valor={seleccion} onCambio={setSeleccion} />
         <label className="flex flex-col gap-1.5 text-sm text-ink-soft">
           <span>Motivo de la derivación</span>
           <Input name="motivo" placeholder="Ej. Ausentismo reiterado y bajo rendimiento" required />
         </label>
         <label className="flex flex-col gap-1.5 text-sm text-ink-soft">
           <span>Observación para el equipo de bienestar</span>
-          <Textarea name="descripcion" rows={3} placeholder="Qué has observado, sin juicios de valor" />
+          <Textarea
+            name="descripcion"
+            rows={3}
+            placeholder={otro ? "Correo del estudiante y qué has observado, sin juicios de valor" : "Qué has observado, sin juicios de valor"}
+          />
+          {otro && (
+            <span className="flex items-start gap-2 rounded-md border border-stone-200 bg-crema px-3 py-2 text-xs text-ink-soft">
+              <Icon nombre="info" className="mt-0.5 h-4 w-4 shrink-0" />
+              Como el estudiante no está en el sistema, te sugerimos escribir aquí su correo electrónico para que el equipo de bienestar pueda contactarlo.
+            </span>
+          )}
         </label>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <label className="flex flex-col gap-1.5 text-sm text-ink-soft">
@@ -63,9 +75,9 @@ export default function NuevaDerivacionModal({ sedes, onClose, onCrear }) {
 
         <ErrorList errores={errores} />
 
-        <div className="flex justify-end gap-2 pt-1">
+        <div className="flex justify-end gap-2 border-t border-stone-200 pt-4">
           <Button type="button" variant="ghost" onClick={onClose}>Cancelar</Button>
-          <Button type="submit">Enviar derivación</Button>
+          <Button type="submit"><span className="inline-flex items-center gap-2"><Icon nombre="send" className="h-4 w-4" />Enviar derivación</span></Button>
         </div>
       </form>
     </Modal>

@@ -3,9 +3,9 @@ import Profesional from "../models/profesional.js"
 // 1. Registrando Profesional (POST /api/profesional)
 export const regprofesional = async (req,res) => {
   try {
-    const {nombre,especialidad,sedeId,cargaActual} = req.body
+    const {nombre,email,especialidad,sedeId,cargaActual} = req.body
     const nuevoProfesional = new Profesional({
-      nombre,especialidad,sedeId,cargaActual
+      nombre,email,especialidad,sedeId,cargaActual
     })
     const guardado = await nuevoProfesional.save()
     res.status(200).json(guardado)

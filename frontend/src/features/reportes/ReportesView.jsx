@@ -35,7 +35,7 @@ export default function ReportesView({ solicitudes, sedes }) {
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <KpiCard valor={resumen.total} etiqueta="Solicitudes totales" />
         <KpiCard valor={resumen.cerradas} etiqueta="Casos cerrados" />
-        <KpiCard valor={`${resumen.tiempoPromedioHoras} h`} etiqueta="Tiempo promedio de asignación" />
+        <KpiCard valor={resumen.tiempoPromedioTexto} etiqueta="Tiempo típico de asignación" ayuda="Tiempo entre que llega una solicitud y se le asigna un profesional. Es el valor central de los casos ya asignados." />
       </div>
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">

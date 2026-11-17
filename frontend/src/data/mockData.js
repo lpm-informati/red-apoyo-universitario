@@ -12,12 +12,14 @@ export const usuariosSeed = [
   { id: "u-3", nombre: "Valentina Soto", email: "valentina.soto@uni.cl", rol: "profesional", activo: true },
   { id: "u-4", nombre: "Ignacio Pardo", email: "ignacio.pardo@uni.cl", rol: "docente", activo: true },
   { id: "u-5", nombre: "Martina Pérez González", email: "martina.perez@uni.cl", rol: "estudiante", activo: true },
+  { id: "u-6", nombre: "Andrés Fuentes", email: "andres.fuentes@uni.cl", rol: "profesional", activo: true },
+  { id: "u-7", nombre: "Marcela Díaz", email: "marcela.diaz@uni.cl", rol: "profesional", activo: true },
 ];
 
 export const profesionalesSeed = [
-  { id: "p-1", nombre: "Valentina Soto", especialidad: "Psicología clínica", sedeId: "sede-1", cargaActual: 4 },
-  { id: "p-2", nombre: "Andrés Fuentes", especialidad: "Trabajo social", sedeId: "sede-1", cargaActual: 2 },
-  { id: "p-3", nombre: "Marcela Díaz", especialidad: "Psicopedagogía", sedeId: "sede-2", cargaActual: 3 },
+  { id: "p-1", nombre: "Valentina Soto", email: "valentina.soto@uni.cl", especialidad: "Psicología clínica", sedeId: "sede-1", cargaActual: 4 },
+  { id: "p-2", nombre: "Andrés Fuentes", email: "andres.fuentes@uni.cl", especialidad: "Trabajo social", sedeId: "sede-1", cargaActual: 2 },
+  { id: "p-3", nombre: "Marcela Díaz", email: "marcela.diaz@uni.cl", especialidad: "Psicopedagogía", sedeId: "sede-2", cargaActual: 3 },
 ];
 
 export const solicitudesSeed = [

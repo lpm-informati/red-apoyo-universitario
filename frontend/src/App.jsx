@@ -26,6 +26,9 @@ import {
   RUTA_INICIAL_POR_ROL,
 } from "./data/mockData.js";
 
+const ROLES_ATENCION = ["consejero", "profesional"];
+const ROLES_CIERRE = [...ROLES_ATENCION, "administrador"]; // también el administrador puede cerrar casos
+
 const LIMITE_INACTIVIDAD_MS = 5 * 60 * 1000; // 5 minutos (requisito no funcional de seguridad)
 
 // Convierte el _id de MongoDB en .id para que todas las vistas funcionen igual
@@ -272,12 +275,35 @@ export default function App() {
     });
   }
 
+  // Convierte lo elegido en el formulario (estudiante registrado u "otro" escrito a mano)
+  // en los datos del estudiante. Lo usan el docente y el equipo de bienestar.
+  function resolverEstudiante(datos) {
+    const { estudianteNombre, ...resto } = datos;
+    if (datos.estudianteEmail === "__otro__") {
+      const nombre = (estudianteNombre || "").trim();
+      if (nombre.length < 3) return { ok: false, errores: ["Ingresa el nombre completo del estudiante."] };
+      return {
+        ok: true,
+        datos: {
+          ...resto,
+          estudianteIniciales: inicialesDesdeNombre(nombre),
+          estudianteEmail: "",
+          descripcion: `Estudiante no registrado en el sistema: ${nombre}.${resto.descripcion ? " " + resto.descripcion : ""}`,
+        },
+      };
+    }
+    const estudiante = usuarios.find((u) => u.email === datos.estudianteEmail && u.rol === "estudiante");
+    if (!estudiante) return { ok: false, errores: ["Selecciona un estudiante registrado en el sistema."] };
+    return {
+      ok: true,
+      datos: { ...resto, estudianteIniciales: inicialesDesdeNombre(estudiante.nombre), estudianteEmail: estudiante.email },
+    };
+  }
+
   function crearSolicitudComoDocente(datos) {
-    return crearSolicitud({
-      ...datos,
-      origen: "Derivación docente",
-      derivadoPorEmail: sesion.email,
-    });
+    const r = resolverEstudiante(datos);
+    if (!r.ok) return r;
+    return crearSolicitud({ ...r.datos, origen: "Derivación docente", derivadoPorEmail: sesion.email });
   }
 
   async function actualizarSolicitud(id, cambios) {
@@ -299,6 +325,7 @@ export default function App() {
 
   // RF4
   function clasificarSolicitud(id, tipo) {
+    if (sesion.rol !== "consejero") return; // solo el consejero clasifica
     actualizarSolicitud(id, { tipo, estado: "Clasificada" });
     registrarBitacora(sesion.nombre, "Clasificación de solicitud", id);
     mostrarToast("Solicitud clasificada.", "exito");
@@ -306,6 +333,7 @@ export default function App() {
 
   // RF5
   function asignarProfesional(id, profesionalId) {
+    if (sesion.rol !== "consejero") return; // solo el consejero asigna
     if (!profesionalId) return mostrarToast("Selecciona un profesional habilitado.", "error");
     const actual = solicitudes.find((s) => s.id === id);
     const notificaciones = [...(actual?.notificaciones || []), { fecha: new Date().toISOString(), tipo: "Asignación de profesional" }];
@@ -316,7 +344,9 @@ export default function App() {
 
   // RF6
   function agendarCita(id, fecha, nota) {
+    if (sesion.rol !== "profesional") return; // solo el profesional agenda citas
     if (!fecha) return mostrarToast("Selecciona fecha y hora para la cita.", "error");
+    if (new Date(fecha) < new Date()) return mostrarToast("La cita debe tener una fecha futura.", "error");
     const actual = solicitudes.find((s) => s.id === id);
     const citas = [...(actual?.citas || []), { fecha, estado: "Pendiente", nota }];
     actualizarSolicitud(id, { estado: "En seguimiento", citas });
@@ -325,6 +355,7 @@ export default function App() {
   }
 
   function agregarObservacion(id, texto) {
+    if (sesion.rol !== "profesional") return; // las escribe el profesional; las lee el administrador
     if (!texto || texto.trim().length < 3) return mostrarToast("La observación no puede estar vacía.", "error");
     const actual = solicitudes.find((s) => s.id === id);
     const observaciones = [...(actual?.observaciones || []), { fecha: new Date().toISOString(), autor: sesion.nombre, texto: texto.trim() }];
@@ -335,6 +366,7 @@ export default function App() {
 
   // RF7
   function notificarEstudiante(id, tipo) {
+    if (!ROLES_ATENCION.includes(sesion.rol)) return;
     const actual = solicitudes.find((s) => s.id === id);
     const notificaciones = [...(actual?.notificaciones || []), { fecha: new Date().toISOString(), tipo }];
     actualizarSolicitud(id, { notificaciones });
@@ -343,21 +375,31 @@ export default function App() {
   }
 
   // RF11
+  // Devuelve true si el caso se cerró (así la ventana solo se cierra cuando corresponde)
   function cerrarCaso(id, motivo, derivacion) {
-    if (!motivo || motivo.trim().length < 3) return mostrarToast("Indica el motivo de cierre.", "error");
+    if (!ROLES_CIERRE.includes(sesion.rol)) return false;
+    if (!motivo || motivo.trim().length < 3) {
+      mostrarToast("Indica el motivo de cierre.", "error");
+      return false;
+    }
     const actual = solicitudes.find((s) => s.id === id);
     const cierre = { fecha: new Date().toISOString(), motivo: motivo.trim(), derivacion: derivacion?.trim() || "Sin derivación adicional" };
     const notificaciones = [...(actual?.notificaciones || []), { fecha: new Date().toISOString(), tipo: "Cierre de caso" }];
     actualizarSolicitud(id, { estado: "Cerrada", cierre, notificaciones });
     registrarBitacora(sesion.nombre, "Cierre de caso", id);
     mostrarToast("Caso cerrado.", "exito");
+    return true;
   }
 
   // ---------- RF8: talleres ----------
   function crearTaller(datos) {
+    if (!["profesional", "administrador"].includes(sesion.rol)) {
+      return { ok: false, errores: ["Solo el profesional o el administrador pueden organizar talleres."] };
+    }
     const errores = [];
     if (!datos.nombre || datos.nombre.trim().length < 3) errores.push("Ingresa el nombre del taller.");
     if (!datos.fecha) errores.push("Selecciona fecha y hora.");
+    else if (new Date(datos.fecha) < new Date()) errores.push("La fecha del taller debe ser futura.");
     if (!datos.cupo || Number(datos.cupo) < 1) errores.push("El cupo debe ser mayor a 0.");
     if (errores.length) return { ok: false, errores };
 
@@ -378,19 +420,23 @@ export default function App() {
   }
 
   async function inscribirEnTaller(id) {
+    if (sesion.rol !== "estudiante") return; // solo estudiantes se inscriben
     const taller = talleres.find((t) => t.id === id);
+    const yo = sesion.email.toLowerCase();
+    const inscritosEmails = taller.inscritosEmails || [];
+    if (inscritosEmails.includes(yo)) return mostrarToast("Ya estás inscrito en este taller.", "error");
     if (taller.inscritos >= taller.cupo) return mostrarToast("El taller ya alcanzó su cupo máximo.", "error");
     const res = await fetch(`/api/taller/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ inscritos: taller.inscritos + 1 }),
+      body: JSON.stringify({ inscritos: taller.inscritos + 1, inscritosEmails: [...inscritosEmails, yo] }),
     });
     if (res.ok) {
       const data = await res.json();
       const doc = normalizar(data.taller || data);
       setTalleres((prev) => prev.map((t) => (t.id === id ? doc : t)));
       registrarBitacora(sesion.nombre, "Inscripción en taller", id);
-      mostrarToast("Inscripción registrada.", "exito");
+      mostrarToast(`Inscripción registrada. Se notificó al equipo de bienestar.`, "exito");
     }
   }
 
@@ -421,6 +467,7 @@ export default function App() {
 
   async function alternarEstadoUsuario(id) {
     const actual = usuarios.find((u) => u.id === id);
+    if (actual.email.toLowerCase() === sesion.email.toLowerCase()) return mostrarToast("No puedes desactivar tu propia cuenta.", "error");
     const res = await fetch(`/api/usuario/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -472,6 +519,7 @@ export default function App() {
     const errores = [];
     if (!datos.nombre || datos.nombre.trim().length < 3) errores.push("Ingresa el nombre del profesional.");
     if (!datos.especialidad) errores.push("Ingresa la especialidad.");
+    if (!/^\S+@\S+\.\S+$/.test(datos.email || "")) errores.push("Ingresa el correo de la cuenta del profesional.");
     if (!datos.sedeId) errores.push("Selecciona la sede.");
     if (errores.length) return { ok: false, errores };
 
@@ -504,6 +552,16 @@ export default function App() {
   const navItemsVisibles = NAV_ITEMS.filter((item) => item.roles.includes(sesion.rol));
   const rutaPorDefecto = `/${RUTA_INICIAL_POR_ROL[sesion.rol] || "inicio"}`;
 
+  // El profesional solo ve los casos que le asignaron (se vincula a su cuenta por correo; si no, por nombre)
+  const miProfesional =
+    sesion.rol === "profesional"
+      ? profesionales.find((p) => (p.email || "").toLowerCase() === sesion.email.toLowerCase() || p.nombre === sesion.nombre)
+      : null;
+  const solicitudesVisibles =
+    sesion.rol === "profesional"
+      ? solicitudes.filter((s) => miProfesional && s.profesionalId === miProfesional.id)
+      : solicitudes;
+
   return (
     <div className="flex min-h-screen flex-col">
       <Header usuario={sesion} navItems={navItemsVisibles} onLogout={() => manejarLogout()} />
@@ -512,17 +570,17 @@ export default function App() {
         <Routes>
           <Route
             path="/inicio"
-            element={<InicioView solicitudes={solicitudes} sedes={sedes} onNavigate={(r) => navigate(`/${r}`)} />}
+            element={<InicioView solicitudes={solicitudesVisibles} sedes={sedes} sesion={sesion} onNavigate={(r) => navigate(`/${r}`)} />}
           />
           <Route
             path="/solicitudes"
             element={
               <SolicitudesView
-                solicitudes={solicitudes}
+                solicitudes={solicitudesVisibles}
+                rol={sesion.rol}
                 sedes={sedes}
                 tipos={tiposSolicitud}
                 profesionales={profesionales}
-                onCrear={crearSolicitud}
                 onClasificar={clasificarSolicitud}
                 onAsignar={asignarProfesional}
                 onAgendarCita={agendarCita}
@@ -541,7 +599,9 @@ export default function App() {
                 sedes={sedes}
                 onCrear={crearTaller}
                 onInscribir={inscribirEnTaller}
-                permiteCrear={sesion.rol !== "estudiante"}
+                permiteCrear={["profesional", "administrador"].includes(sesion.rol)}
+                emailEstudiante={sesion.email}
+                permiteInscribir={sesion.rol === "estudiante"}
               />
             }
           />
@@ -551,7 +611,7 @@ export default function App() {
           />
           <Route
             path="/derivar"
-            element={<DocenteView solicitudes={solicitudes} sedes={sedes} sesion={sesion} onCrear={crearSolicitudComoDocente} />}
+            element={<DocenteView solicitudes={solicitudes} sedes={sedes} usuarios={usuarios} sesion={sesion} onCrear={crearSolicitudComoDocente} />}
           />
           <Route path="/reportes" element={<ReportesView solicitudes={solicitudes} sedes={sedes} />} />
           <Route
@@ -570,7 +630,7 @@ export default function App() {
               />
             }
           />
-          <Route path="/bitacora" element={<BitacoraView bitacora={bitacora} />} />
+          <Route path="/bitacora" element={<BitacoraView bitacora={bitacora} solicitudes={solicitudes} talleres={talleres} usuarios={usuarios} sedes={sedes} profesionales={profesionales} />} />
           <Route path="*" element={<Navigate to={rutaPorDefecto} replace />} />
         </Routes>
       </main>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Modal from "../../components/ui/Modal.jsx";
 import Button from "../../components/ui/Button.jsx";
+import Icon from "../../components/ui/Icon.jsx";
 import { Input, Select, Textarea, ErrorList } from "../../components/ui/FormField.jsx";
 
 /*
@@ -25,10 +26,11 @@ export default function NuevaSolicitudEstudianteModal({ sedes, onClose, onCrear 
   }
 
   return (
-    <Modal titulo="Nueva solicitud de apoyo" onClose={onClose}>
+    <Modal titulo="Nueva solicitud de apoyo" icono="clipboard" onClose={onClose}>
       <form onSubmit={manejarEnvio} className="flex flex-col gap-4">
-        <p className="rounded-md bg-sage-soft px-3 py-2 text-xs text-brand-deep">
-          🔒 Tu solicitud será revisada por el equipo de bienestar. La información que compartas es confidencial.
+        <p className="flex items-center gap-2 rounded-md bg-sage-soft px-3 py-2 text-xs text-brand-deep">
+          <Icon nombre="lock" className="h-4 w-4 shrink-0" />
+          Tu solicitud será revisada por el equipo de bienestar. La información que compartas es confidencial.
         </p>
         <label className="flex flex-col gap-1.5 text-sm text-ink-soft">
           <span>¿Qué está pasando? (motivo)</span>
@@ -61,9 +63,9 @@ export default function NuevaSolicitudEstudianteModal({ sedes, onClose, onCrear 
 
         <ErrorList errores={errores} />
 
-        <div className="flex justify-end gap-2 pt-1">
+        <div className="flex justify-end gap-2 border-t border-stone-200 pt-4">
           <Button type="button" variant="ghost" onClick={onClose}>Cancelar</Button>
-          <Button type="submit">Enviar solicitud</Button>
+          <Button type="submit"><span className="inline-flex items-center gap-2"><Icon nombre="send" className="h-4 w-4" />Enviar solicitud</span></Button>
         </div>
       </form>
     </Modal>

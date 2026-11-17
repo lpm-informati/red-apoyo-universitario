@@ -1,16 +1,15 @@
 import { useMemo, useState } from "react";
 import Badge from "../../components/ui/Badge.jsx";
 import Button from "../../components/ui/Button.jsx";
-import NuevaSolicitudModal from "./NuevaSolicitudModal.jsx";
 import DetalleSolicitudModal from "./DetalleSolicitudModal.jsx";
-import { formatearFecha, ordenarPorUrgencia } from "../../utils/format.js";
+import { formatearFecha } from "../../utils/format.js";
 
 export default function SolicitudesView({
   solicitudes,
   sedes,
   tipos,
   profesionales,
-  onCrear,
+  rol,
   onClasificar,
   onAsignar,
   onAgendarCita,
@@ -20,9 +19,14 @@ export default function SolicitudesView({
   onVerDetalle,
 }) {
   const [filtros, setFiltros] = useState({ estado: "", tipo: "", urgencia: "", sedeId: "" });
-  const [mostrarNuevo, setMostrarNuevo] = useState(false);
   const [detalleId, setDetalleId] = useState(null);
 
+  const subtitulo =
+    rol === "administrador"
+      ? "Consulta el estado de las solicitudes (solo lectura)."
+      : rol === "profesional"
+        ? "Casos que te asignaron: agenda citas y da seguimiento."
+        : "Prioriza, clasifica, deriva y da seguimiento a cada solicitud.";
   const sedeNombre = Object.fromEntries(sedes.map((s) => [s.id, s.nombre]));
 
   const listado = useMemo(() => {
@@ -31,7 +35,8 @@ export default function SolicitudesView({
     if (filtros.tipo) lista = lista.filter((s) => s.tipo === filtros.tipo);
     if (filtros.urgencia) lista = lista.filter((s) => s.urgencia === filtros.urgencia);
     if (filtros.sedeId) lista = lista.filter((s) => s.sedeId === filtros.sedeId);
-    return ordenarPorUrgencia(lista);
+    // De la más reciente a la más antigua
+    return [...lista].sort((a, b) => new Date(b.fechaCreacion) - new Date(a.fechaCreacion));
   }, [solicitudes, filtros]);
 
   const solicitudSeleccionada = detalleId ? solicitudes.find((s) => s.id === detalleId) : null;
@@ -46,9 +51,8 @@ export default function SolicitudesView({
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="font-display text-2xl text-brand-deep">Solicitudes de apoyo</h2>
-          <p className="text-sm text-ink-soft">Prioriza, clasifica, deriva y da seguimiento a cada solicitud.</p>
+          <p className="text-sm text-ink-soft">{subtitulo}</p>
         </div>
-        <Button onClick={() => setMostrarNuevo(true)}>+ Registrar solicitud</Button>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -99,7 +103,7 @@ export default function SolicitudesView({
                     <td className="py-2">{s.origen}</td>
                     <td className="py-2">{formatearFecha(s.fechaCreacion)}</td>
                     <td className="py-2">
-                      <Button variant="link" small onClick={() => abrirDetalle(s.id)}>Gestionar</Button>
+                      <Button variant="link" small onClick={() => abrirDetalle(s.id)}>{rol === "administrador" ? "Ver detalle" : "Gestionar"}</Button>
                     </td>
                   </tr>
                 ))}
@@ -109,23 +113,20 @@ export default function SolicitudesView({
         )}
       </section>
 
-      {mostrarNuevo && (
-        <NuevaSolicitudModal sedes={sedes} tipos={tipos} onClose={() => setMostrarNuevo(false)} onCrear={onCrear} />
-      )}
-
       {solicitudSeleccionada && (
         <DetalleSolicitudModal
           solicitud={solicitudSeleccionada}
           sedes={sedes}
           tipos={tipos}
           profesionales={profesionales}
+          rol={rol}
           onClose={() => setDetalleId(null)}
           onClasificar={onClasificar}
           onAsignar={onAsignar}
           onAgendarCita={onAgendarCita}
           onAgregarObservacion={onAgregarObservacion}
           onNotificar={onNotificar}
-          onCerrar={(id, motivo, derivacion) => { onCerrar(id, motivo, derivacion); setDetalleId(null); }}
+          onCerrar={(id, motivo, derivacion) => { if (onCerrar(id, motivo, derivacion)) setDetalleId(null); }}
         />
       )}
     </div>

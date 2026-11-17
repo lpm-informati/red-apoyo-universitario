@@ -17,6 +17,14 @@ function contarPor(lista, campo) {
   }, {});
 }
 
+// 1,5 h · 18 h · 3 días
+export function formatearDuracion(horas) {
+  if (horas === null || horas === undefined) return "—";
+  if (horas < 1) return "< 1 h";
+  if (horas < 48) return `${Math.round(horas)} h`;
+  return `${Math.round(horas / 24)} días`;
+}
+
 // RF10: reportes agregados — solo conteos y promedios, nunca datos nominales.
 export function generarResumen(solicitudes, sedes) {
   const sedeNombre = Object.fromEntries(sedes.map((s) => [s.id, s.nombre]));
@@ -24,11 +32,17 @@ export function generarResumen(solicitudes, sedes) {
   const porSede = Object.fromEntries(Object.entries(porSedeIds).map(([id, n]) => [sedeNombre[id] || id, n]));
 
   const conAsignacion = solicitudes.filter((s) => s.profesionalId);
-  const horas = conAsignacion.map((s) => {
-    const notif = s.notificaciones.find((n) => n.tipo === "Asignación de profesional");
-    return notif ? Math.max(0, (new Date(notif.fecha) - new Date(s.fechaCreacion)) / 36e5) : 0;
-  });
-  const tiempoPromedioHoras = horas.length ? Math.round((horas.reduce((a, b) => a + b, 0) / horas.length) * 10) / 10 : 0;
+  const horas = conAsignacion
+    .map((s) => {
+      const notif = s.notificaciones.find((n) => n.tipo === "Asignación de profesional");
+      return notif ? Math.max(0, (new Date(notif.fecha) - new Date(s.fechaCreacion)) / 36e5) : null;
+    })
+    .filter((h) => h !== null)
+    .sort((a, b) => a - b);
+  // Se usa la mediana: un par de casos antiguos asignados tarde ya no inflan el indicador.
+  const mitad = Math.floor(horas.length / 2);
+  const mediana = !horas.length ? 0 : horas.length % 2 ? horas[mitad] : (horas[mitad - 1] + horas[mitad]) / 2;
+  const tiempoPromedioHoras = Math.round(mediana * 10) / 10;
 
   return {
     total: solicitudes.length,
@@ -36,6 +50,7 @@ export function generarResumen(solicitudes, sedes) {
     cerradas: solicitudes.filter((s) => s.estado === "Cerrada").length,
     altaUrgenciaSinAsignar: solicitudes.filter((s) => s.urgencia === "Alta" && !s.profesionalId).length,
     tiempoPromedioHoras,
+    tiempoPromedioTexto: formatearDuracion(horas.length ? mediana : null),
     porTipo: contarPor(solicitudes, "tipo"),
     porEstado: contarPor(solicitudes, "estado"),
     porUrgencia: contarPor(solicitudes, "urgencia"),

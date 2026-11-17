@@ -1,4 +1,4 @@
-export default function KpiCard({ valor, etiqueta, alerta = false }) {
+export default function KpiCard({ valor, etiqueta, ayuda, alerta = false }) {
   return (
     <article
       className={`rounded-md border p-4 sm:p-5 ${
@@ -7,6 +7,7 @@ export default function KpiCard({ valor, etiqueta, alerta = false }) {
     >
       <p className={`font-display text-3xl ${alerta ? "text-alert" : "text-brand-deep"}`}>{valor}</p>
       <p className="mt-1 text-sm text-ink-soft">{etiqueta}</p>
+      {ayuda && <p className="mt-1 text-xs text-ink-soft/80">{ayuda}</p>}
     </article>
   );
 }

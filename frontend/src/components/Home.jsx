@@ -46,7 +46,7 @@ export default function Home() {
           <img
             className="home-img"
             src={heroHome}
-            alt="Espacio de bienestar universitario con estudiantes leyendo, conversando y meditando"
+            alt="Profesional de apoyo conversando con una estudiante al aire libre en el campus"
           />
         </div>
       </main>

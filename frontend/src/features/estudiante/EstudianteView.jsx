@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Badge from "../../components/ui/Badge.jsx";
 import Button from "../../components/ui/Button.jsx";
+import TarjetaBienvenida from "../../components/ui/TarjetaBienvenida.jsx";
 import NuevaSolicitudEstudianteModal from "./NuevaSolicitudEstudianteModal.jsx";
 import { formatearFecha } from "../../utils/format.js";
 
@@ -19,6 +20,7 @@ export default function EstudianteView({ solicitudes, sedes, sesion, onCrear }) 
 
   return (
     <div className="flex flex-col gap-5">
+      <TarjetaBienvenida sesion={sesion} />
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="font-display text-2xl text-brand-deep">Mis solicitudes de apoyo</h2>
